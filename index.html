@@ -88,6 +88,9 @@
     border-radius: 0 100% 0 100%; animation: flutter 2.6s ease-in-out infinite alternate;
   }
   .drift-item.petal i { width: 10px; height: 12px; border-radius: 60% 40% 60% 40%; }
+  .drift-item.snow i { width: var(--s); height: var(--s); border-radius: 50%; background: #fff; opacity: .9; box-shadow: 0 0 6px rgba(255, 255, 255, .8); }
+  .tree { transform-box: fill-box; transform-origin: 50% 100%; animation: treesway 6s ease-in-out infinite alternate; }
+  @keyframes treesway { from { transform: rotate(-1.3deg); } to { transform: rotate(1.5deg); } }
   .drift-item.seed { top: auto; bottom: -28px; animation-name: rise; }
   .drift-item.seed i {
     width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .8;
@@ -436,24 +439,66 @@
 // =====================================================================
 // PAISAJES (dibujados en la página: siempre nítidos, sin fotos externas)
 // =====================================================================
-const SCENES = [
-  { name: "Amanecer en las montañas", sky: ["#a9b8de", "#e9c9cf", "#fbe2c8"], sun: { r: 46 }, clouds: 4, birds: true, fx: "petal", fxc: ["#e9c6d9", "#f3dbe6", "#d7b8e0"],
-    layers: [ { t: "m", b: .56, a: .17, c: "#c7b7d6" }, { t: "m", b: .64, a: .12, c: "#a898c2" }, { t: "h", b: .74, a: .05, c: "#8a7fae" }, { t: "f", b: .86, a: .03, c: "#5f5a86" } ] },
-  { name: "Lago sereno", sky: ["#8fb8dc", "#cfe1ec", "#f3efe2"], sun: { r: 34 }, clouds: 5, birds: true, water: .7, wc: ["#a8c8dc", "#6f9cbd"], fx: "leaf", fxc: ["#9cc48f", "#c7d98a", "#7fae7a"],
-    layers: [ { t: "m", b: .56, a: .2, c: "#b3c6d6" }, { t: "m", b: .64, a: .12, c: "#87a3ba" }, { t: "f", b: .7, a: .015, c: "#4f7766" } ] },
-  { name: "Campo de trigo", sky: ["#f0c49f", "#f6dcb6", "#fcefd5"], sun: { r: 52 }, clouds: 3, birds: true, fx: "leaf", fxc: ["#e8c06a", "#d9a74a", "#f1d48d"],
+// Un fondo fijo para cada emoción
+const SCENES = {
+  feliz: { name: "Campo de trigo", sky: ["#f0c49f", "#f6dcb6", "#fcefd5"], sun: { r: 52 }, clouds: 3, birds: true, fx: "petal", fxc: ["#f7d34f", "#f2b53a", "#fbe38a"],
     layers: [ { t: "h", b: .66, a: .05, c: "#d9b98a" }, { t: "h", b: .72, a: .05, c: "#e1b866" }, { t: "h", b: .8, a: .04, c: "#cf9f4e" }, { t: "h", b: .9, a: .03, c: "#b8843d" } ] },
-  { name: "Mar al atardecer", sky: ["#7d88bf", "#d99aa6", "#f6c99a"], sun: { r: 50 }, clouds: 4, birds: true, water: .64, wc: ["#e3a99f", "#6e6f9e"], fx: "seed",
+  ansioso: { name: "Lago sereno", sky: ["#8fb8dc", "#cfe1ec", "#f3efe2"], sun: { r: 34 }, clouds: 5, birds: true, water: .7, wc: ["#a8c8dc", "#6f9cbd"], fx: "leaf", fxc: ["#9cc48f", "#c7d98a", "#7fae7a"],
+    layers: [ { t: "m", b: .56, a: .2, c: "#b3c6d6" }, { t: "m", b: .64, a: .12, c: "#87a3ba" }, { t: "f", b: .7, a: .015, c: "#4f7766" } ] },
+  enojado: { name: "Mar al atardecer", sky: ["#7d88bf", "#d99aa6", "#f6c99a"], sun: { r: 50 }, clouds: 4, birds: true, water: .64, wc: ["#e3a99f", "#6e6f9e"], fx: "seed",
     layers: [ { t: "m", b: .62, a: .05, c: "#8a7da6" } ] },
-  { name: "Bosque en calma", sky: ["#bcdacf", "#e2ede0", "#f4f1dc"], sun: { r: 30 }, clouds: 3, birds: false, fx: "leaf", fxc: ["#8fb36b", "#d1a54c", "#b9c96a", "#c9844a"],
-    layers: [ { t: "m", b: .6, a: .14, c: "#a9c2b0" }, { t: "f", b: .7, a: .03, c: "#7fa38a" }, { t: "f", b: .8, a: .03, c: "#5b8468" }, { t: "f", b: .9, a: .02, c: "#3c6550" } ] },
-  { name: "Cordillera azul", sky: ["#8ea6d8", "#c3cfea", "#e9ebf3"], sun: { r: 30 }, clouds: 2, birds: true, fx: "seed",
-    layers: [ { t: "m", b: .62, a: .16, c: "#8f97c4" }, { t: "m", b: .7, a: .1, c: "#6a72a3" }, { t: "f", b: .82, a: .03, c: "#454b7a" } ] },
-  { name: "Colinas rosadas", sky: ["#e7b9c4", "#f3d6d3", "#fbece2"], sun: { r: 42 }, clouds: 4, birds: true, fx: "petal", fxc: ["#f2b8c6", "#f7d1db", "#e79ab0"],
+  agradecido: { name: "Colinas rosadas", sky: ["#e7b9c4", "#f3d6d3", "#fbece2"], sun: { r: 42 }, clouds: 4, birds: true, fx: "petal", fxc: ["#f2b8c6", "#f7d1db", "#e79ab0"],
     layers: [ { t: "h", b: .62, a: .07, c: "#dcb2bf" }, { t: "h", b: .7, a: .06, c: "#c897ab" }, { t: "h", b: .8, a: .05, c: "#a97d97" }, { t: "h", b: .9, a: .03, c: "#86637e" } ] },
-  { name: "Valle verde", sky: ["#9ec9e6", "#d2e6ee", "#eef3e3"], sun: { r: 32 }, clouds: 6, birds: true, fx: "leaf", fxc: ["#a3c97f", "#cfe08f", "#86b46a"],
-    layers: [ { t: "m", b: .55, a: .2, c: "#b6c9d8" }, { t: "h", b: .68, a: .06, c: "#a6c98e" }, { t: "h", b: .78, a: .05, c: "#82b06e" }, { t: "f", b: .88, a: .02, c: "#557f4e" } ] },
-];
+  solo: { name: "Árbol en la colina", sky: ["#8ea6d8", "#c3cfea", "#e9ebf3"], sun: { r: 30 }, clouds: 2, birds: false, fx: "seed",
+    layers: [ { t: "m", b: .6, a: .16, c: "#8f97c4", snow: .2 }, { t: "m", b: .68, a: .1, c: "#6f77a8" }, { t: "h", b: .82, a: .04, c: "#55608f" } ],
+    trees: { on: 2, at: [ [.74, 240] ], foliage: ["#6a78ad", "#7886bb", "#5b6a9e"] } },
+  triste: { name: "Amanecer en las montañas", sky: ["#a9b8de", "#e9c9cf", "#fbe2c8"], sun: { r: 46 }, clouds: 4, birds: true, fx: "petal", fxc: ["#e9c6d9", "#f3dbe6", "#d7b8e0"],
+    layers: [ { t: "m", b: .56, a: .17, c: "#c7b7d6", snow: .15 }, { t: "m", b: .64, a: .12, c: "#a898c2" }, { t: "h", b: .74, a: .05, c: "#8a7fae" }, { t: "f", b: .86, a: .03, c: "#5f5a86" } ] },
+};
+
+// El fondo del versículo del día: el valle mendocino, según la estación del año
+const DAY_TREES = [ [.17, 95], [.25, 120], [.33, 85], [.41, 105], [.59, 110], [.67, 90], [.76, 125], [.85, 100] ];
+const DAY_SCENES = {
+  primavera: { label: "Primavera", sky: ["#9ccbec", "#d4e9f0", "#f1f4e2"], sun: { r: 36 }, clouds: 4, birds: true, fx: "petal", fxc: ["#f6c9d6", "#ffffff", "#f3b3c6", "#fde7ee"],
+    layers: [ { t: "m", b: .55, a: .2, c: "#b4c3d8", snow: .3 }, { t: "m", b: .63, a: .1, c: "#9fb6a8" }, { t: "h", b: .72, a: .05, c: "#94c47e" }, { t: "h", b: .84, a: .035, c: "#6fa95c" } ],
+    trees: { on: 2, at: DAY_TREES, foliage: ["#7fb86a", "#93c77a", "#6aa45a"], blossom: ["#f6c9d6", "#ffffff", "#f2a9c0"] },
+    vines: "#86bd63", ground: { n: 80, c: ["#f7d34f", "#ffffff", "#f29ab6", "#c99bea"] } },
+  verano: { label: "Verano", sky: ["#5fa4e6", "#bcdcf2", "#fde3b0"], sun: { r: 58 }, clouds: 2, birds: true, fx: "seed",
+    layers: [ { t: "m", b: .55, a: .2, c: "#b9b7cf", snow: .1 }, { t: "m", b: .63, a: .1, c: "#c2ad8a" }, { t: "h", b: .72, a: .05, c: "#c8b866" }, { t: "h", b: .84, a: .035, c: "#a9a24e" } ],
+    trees: { on: 2, at: DAY_TREES, foliage: ["#3f7f45", "#4f8f4a", "#356b3c"] },
+    vines: "#3f7f3a", ground: { n: 35, c: ["#f2c230", "#e8a33a", "#f7dc6a"] } },
+  otono: { label: "Otoño", sky: ["#8fb2d6", "#e2d9cf", "#f6dcb2"], sun: { r: 40 }, clouds: 4, birds: true, fx: "leaf", fxc: ["#d9772f", "#c4462e", "#e8a53a", "#9a5a2c"], fxn: 1.8,
+    layers: [ { t: "m", b: .55, a: .2, c: "#b8b1c4", snow: .25 }, { t: "m", b: .63, a: .1, c: "#b39a86" }, { t: "h", b: .72, a: .05, c: "#c49a5c" }, { t: "h", b: .84, a: .035, c: "#a5773f" } ],
+    trees: { on: 2, at: DAY_TREES, foliage: ["#d9772f", "#e8a53a", "#c4462e"], sparse: true },
+    vines: "#c0702f", ground: { n: 110, c: ["#d9772f", "#c4462e", "#e8a53a", "#8a5228"], leaf: true } },
+  invierno: { label: "Invierno", sky: ["#9fb5cf", "#d5e0ea", "#eef2f5"], sun: { r: 30 }, clouds: 5, birds: false, fx: "snow", fxn: 3,
+    layers: [ { t: "m", b: .55, a: .2, c: "#c9d2e2", snow: .75 }, { t: "m", b: .63, a: .1, c: "#b7c3d3", snow: .55 }, { t: "h", b: .72, a: .05, c: "#e3eaf1" }, { t: "h", b: .84, a: .035, c: "#f2f5f9" } ],
+    trees: { on: 2, at: DAY_TREES, bare: true, snow: true },
+    vines: "#9a8a7c" },
+};
+Object.keys(DAY_SCENES).forEach(k => { DAY_SCENES[k].name = "Valle de Mendoza · " + DAY_SCENES[k].label; });
+
+// Hemisferio (según la zona horaria del dispositivo) y estación del año
+const query0 = new URLSearchParams(location.search);
+function hemisphere() {
+  const q = query0.get("hemisferio");
+  if (q) return q === "norte" ? "N" : "S";
+  let tz = "";
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  if (/^(America\/(Argentina|Buenos_Aires|Cordoba|Mendoza|Catamarca|Jujuy|Rosario|Santiago|Punta_Arenas|Montevideo|Asuncion|Sao_Paulo|La_Paz|Lima|Bahia|Recife|Fortaleza|Belem|Cuiaba|Campo_Grande|Porto_Velho|Manaus|Rio_Branco|Maceio|Araguaina)|Australia\/|Antarctica\/|Pacific\/(Auckland|Chatham|Fiji|Tongatapu|Apia|Easter)|Africa\/(Johannesburg|Maputo|Harare|Lusaka|Windhoek|Gaborone|Maseru|Mbabane|Blantyre|Luanda|Lubumbashi)|Indian\/(Mauritius|Reunion|Antananarivo))/.test(tz)) return "S";
+  if (/^(Europe|Asia|America|Africa|Atlantic)\//.test(tz)) return "N";
+  return "S";
+}
+const HEMI = hemisphere();
+const SEASONS = ["verano", "otono", "invierno", "primavera"];   // orden austral, desde el 21/12
+function season(d) {
+  const q = query0.get("estacion");                            // para probar: ?estacion=invierno
+  if (q && DAY_SCENES[q]) return q;
+  const md = (d.getMonth() + 1) * 100 + d.getDate();
+  let i = md >= 1221 || md < 321 ? 0 : md < 621 ? 1 : md < 922 ? 2 : 3;
+  if (HEMI === "N") i = (i + 2) % 4;
+  return SEASONS[i];
+}
 
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function hash(s) { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -475,7 +520,7 @@ const clamp01 = v => Math.max(0, Math.min(1, v));
 function sunTimes(d) {
   // Mendoza: amanece ~6:20 y anochece ~20:50 en verano; ~8:15 y ~18:15 en invierno
   const doy = (d - new Date(d.getFullYear(), 0, 0)) / 86400000;
-  const half = 6.125 + 1.125 * Math.cos(2 * Math.PI * (doy - 355) / 365);
+  const half = 6.125 + 1.125 * Math.cos(2 * Math.PI * (doy - (HEMI === "N" ? 172 : 355)) / 365);
   const noon = 13.55;
   return { rise: noon - half, set: noon + half, noon };
 }
@@ -520,6 +565,7 @@ function ridge(L0, r) {
   const L = Object.assign({}, L0, { b: L0.b - .07 });   // paisaje un poco más arriba, detrás del versículo
   const ph = [r() * 6.28, r() * 6.28, r() * 6.28], f = [.8 + r() * 1.4, 2.5 + r() * 3, 7 + r() * 6];
   let d = "M0 " + H;
+  const ys = [];
   for (let x = 0; x <= W; x += 10) {
     const t = x / W;
     let y;
@@ -531,19 +577,22 @@ function ridge(L0, r) {
       if (L.t === "f") y -= (x / 10) % 3 === 0 ? 10 + r() * 22 : r() * 6;   // copas de árboles
     }
     d += " L" + x + " " + y.toFixed(1);
+    ys.push(y);
   }
-  return d + " L" + W + " " + H + " Z";
+  return { d: d + " L" + W + " " + H + " Z", ys };
 }
 
 // Color de la tierra según la hora: más oscuro de noche, más cálido al atardecer
 function landColor(c, T) { return mix(mix(c, "#e08a5a", T.golden * .14), "#141836", T.dark * .58); }
 
+let renderN = 0;
 function sceneSVG(s, seed, T, anim) {
+  const uid = seed + "_" + renderN + (anim ? "a" : "b");
   const r = rng(seed), span = viewSpan(), lit = 1 - T.dark;
   const sky = T.sky.map((c, i) => mix(c, s.sky[i], .3 * lit));
   const cloudC = mix(mix("#ffffff", "#ffd3bd", T.golden), "#5f6494", T.dark * .9);
   let g = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs>' +
-    '<linearGradient id="sk' + seed + anim + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[0] + '"/><stop offset=".55" stop-color="' + sky[1] + '"/><stop offset="1" stop-color="' + sky[2] + '"/></linearGradient>';
+    '<linearGradient id="sk' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[0] + '"/><stop offset=".55" stop-color="' + sky[1] + '"/><stop offset="1" stop-color="' + sky[2] + '"/></linearGradient>';
 
   // sol
   let sun = null;
@@ -551,10 +600,10 @@ function sceneSVG(s, seed, T, anim) {
     const e = Math.sin(Math.PI * T.sunP), hi = clamp01(e * 1.6);
     sun = { x: (.5 + (T.sunP - .5) * .62 * span) * W, y: (.52 - .36 * e) * H, r: s.sun.r,
             c: mix("#ffcf9a", "#fffbea", hi), g: mix("#ff9f6e", "#fff1c4", hi) };
-    g += '<radialGradient id="gl' + seed + anim + '"><stop offset="0" stop-color="' + sun.g + '" stop-opacity=".95"/><stop offset="1" stop-color="' + sun.g + '" stop-opacity="0"/></radialGradient>';
+    g += '<radialGradient id="gl' + uid + '"><stop offset="0" stop-color="' + sun.g + '" stop-opacity=".95"/><stop offset="1" stop-color="' + sun.g + '" stop-opacity="0"/></radialGradient>';
   }
-  if (s.water) g += '<linearGradient id="wa' + seed + anim + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + landColor(s.wc[0], T) + '"/><stop offset="1" stop-color="' + landColor(s.wc[1], T) + '"/></linearGradient>';
-  g += '</defs><rect width="' + W + '" height="' + H + '" fill="url(#sk' + seed + anim + ')"/>';
+  if (s.water) g += '<linearGradient id="wa' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + landColor(s.wc[0], T) + '"/><stop offset="1" stop-color="' + landColor(s.wc[1], T) + '"/></linearGradient>';
+  g += '</defs><rect width="' + W + '" height="' + H + '" fill="url(#sk' + uid + ')"/>';
 
   // estrellas (titilan)
   if (T.dark > .25) {
@@ -572,7 +621,7 @@ function sceneSVG(s, seed, T, anim) {
     const o = clamp01((T.dark - .3) / .4);
     g += '<circle cx="' + moon.x + '" cy="' + moon.y + '" r="120" fill="#cfd3f2" opacity="' + (.12 * o).toFixed(2) + '"/><circle cx="' + moon.x + '" cy="' + moon.y + '" r="30" fill="#f4f1e6" opacity="' + o.toFixed(2) + '"/>';
   }
-  if (sun) g += '<circle' + (anim ? ' class="glow"' : "") + ' cx="' + sun.x + '" cy="' + sun.y + '" r="' + sun.r * 6 + '" fill="url(#gl' + seed + anim + ')"/><circle cx="' + sun.x + '" cy="' + sun.y + '" r="' + sun.r + '" fill="' + sun.c + '"/>';
+  if (sun) g += '<circle' + (anim ? ' class="glow"' : "") + ' cx="' + sun.x + '" cy="' + sun.y + '" r="' + sun.r * 6 + '" fill="url(#gl' + uid + ')"/><circle cx="' + sun.x + '" cy="' + sun.y + '" r="' + sun.r + '" fill="' + sun.c + '"/>';
 
   // nubes que se desplazan (solo en la capa nítida)
   for (let i = 0; i < s.clouds; i++) {
@@ -591,12 +640,26 @@ function sceneSVG(s, seed, T, anim) {
     }
     g += '</g></g>';
   }
-  s.layers.forEach(L => { g += '<path d="' + ridge(L, r) + '" fill="' + landColor(L.c, T) + '"/>'; });
+  s.layers.forEach((L, li) => {
+    const R0 = ridge(L, r);
+    g += '<path d="' + R0.d + '" fill="' + landColor(L.c, T) + '"/>';
+    if (L.snow) {   // cumbres nevadas
+      const capY = (L.b - .07) * H - L.a * H * (1 - L.snow);
+      g += '<clipPath id="cp' + uid + li + '"><rect width="' + W + '" height="' + capY.toFixed(0) + '"/></clipPath><path d="' + R0.d + '" fill="' + landColor("#f7f9fd", T) + '" clip-path="url(#cp' + uid + li + ')"/>';
+    }
+    if (s.vines && li === s.layers.length - 1) g += vinesSVG(R0.ys, s.vines, T);
+    if (s.ground && li === s.layers.length - 1) g += groundSVG(R0.ys, s.ground, T, r);
+    if (s.trees && li === s.trees.on) s.trees.at.forEach(([fx, h]) => {
+      const x = (.5 + (fx - .5) * Math.max(span, .62)) * W;   // en el celu se juntan hacia el centro
+      const yi = Math.min(R0.ys.length - 1, Math.round(x / 10));
+      g += treeSVG(x, R0.ys[yi] + 8, h, s.trees, T, r, anim);
+    });
+  });
 
   // agua con reflejos que brillan y olas suaves
   if (s.water) {
     const wy = (s.water - .07) * H;
-    g += '<rect x="0" y="' + wy + '" width="' + W + '" height="' + (H - wy) + '" fill="url(#wa' + seed + anim + ')"/>';
+    g += '<rect x="0" y="' + wy + '" width="' + W + '" height="' + (H - wy) + '" fill="url(#wa' + uid + ')"/>';
     const src = sun || moon;
     if (src) {
       const rc = sun ? "#fff6e4" : "#dfe5ff";
@@ -614,6 +677,53 @@ function sceneSVG(s, seed, T, anim) {
   return g + "</svg>";
 }
 
+// Árbol: copa frondosa (con flores en primavera), rala en otoño o desnudo con nieve en invierno
+function treeSVG(x, y, h, sp, T, r, anim) {
+  const trunk = landColor("#6b5446", T);
+  let g = '<g' + (anim ? ' class="tree" style="animation-delay:-' + (r() * 6).toFixed(1) + 's"' : "") + '>';
+  g += '<path d="M' + (x - h * .045).toFixed(1) + ' ' + y.toFixed(1) + ' L' + (x - h * .022).toFixed(1) + ' ' + (y - h * .58).toFixed(1) + ' L' + (x + h * .022).toFixed(1) + ' ' + (y - h * .58).toFixed(1) + ' L' + (x + h * .045).toFixed(1) + ' ' + y.toFixed(1) + ' Z" fill="' + trunk + '"/>';
+  if (sp.bare) {
+    for (let i = 0; i < 6; i++) {
+      const sy = y - h * (.3 + i * .07), side = i % 2 ? 1 : -1;
+      const ex = x + side * h * (.18 + r() * .2), ey = sy - h * (.25 + r() * .2);
+      g += '<path d="M' + x.toFixed(1) + ' ' + sy.toFixed(1) + ' Q' + ((x + ex) / 2).toFixed(1) + ' ' + (sy - h * .05).toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1) + '" stroke="' + trunk + '" stroke-width="' + (h * .022).toFixed(1) + '" fill="none" stroke-linecap="round"/>';
+      if (sp.snow) g += '<ellipse cx="' + ex.toFixed(1) + '" cy="' + (ey + 2).toFixed(1) + '" rx="' + (h * .05).toFixed(1) + '" ry="' + (h * .022).toFixed(1) + '" fill="' + landColor("#ffffff", T) + '"/>';
+    }
+  } else {
+    const n = sp.sparse ? 6 : 9;
+    for (let i = 0; i < n; i++) {
+      const cx = x + (r() - .5) * h * .55, cy = y - h * (.6 + r() * .38), rad = h * (.12 + r() * .1);
+      g += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + rad.toFixed(1) + '" fill="' + landColor(sp.foliage[i % sp.foliage.length], T) + '"' + (sp.sparse ? ' opacity=".82"' : "") + '/>';
+    }
+    if (sp.blossom) for (let i = 0; i < 16; i++)
+      g += '<circle cx="' + (x + (r() - .5) * h * .6).toFixed(1) + '" cy="' + (y - h * (.55 + r() * .45)).toFixed(1) + '" r="' + (h * .026).toFixed(1) + '" fill="' + landColor(sp.blossom[i % sp.blossom.length], T) + '"/>';
+  }
+  return g + "</g>";
+}
+// Hileras de viñedo que siguen la forma de la loma
+function vinesSVG(ys, color, T) {
+  let g = '<g fill="none" stroke="' + landColor(color, T) + '" stroke-linecap="round" stroke-dasharray="16 12" opacity=".75">';
+  for (let k = 0; k < 6; k++) {
+    const off = 26 + k * 30, sw = (2.5 + k * .9).toFixed(1);
+    let d = "";
+    for (let i = 0; i < ys.length; i += 4) d += (i ? " L" : "M") + i * 10 + " " + (ys[i] + off).toFixed(1);
+    g += '<path d="' + d + '" stroke-width="' + sw + '"/>';
+  }
+  return g + "</g>";
+}
+// Flores (primavera/verano) u hojas caídas (otoño) sobre el pasto
+function groundSVG(ys, gr, T, r) {
+  let g = "";
+  for (let i = 0; i < gr.n; i++) {
+    const x = r() * W, yi = Math.min(ys.length - 1, Math.round(x / 10)), y = ys[yi] + 8 + r() * (H - ys[yi]);
+    const c = landColor(gr.c[i % gr.c.length], T);
+    g += gr.leaf
+      ? '<ellipse cx="' + x.toFixed(0) + '" cy="' + y.toFixed(0) + '" rx="' + (4 + r() * 4).toFixed(1) + '" ry="' + (2 + r() * 2).toFixed(1) + '" transform="rotate(' + (r() * 180).toFixed(0) + ' ' + x.toFixed(0) + ' ' + y.toFixed(0) + ')" fill="' + c + '"/>'
+      : '<circle cx="' + x.toFixed(0) + '" cy="' + y.toFixed(0) + '" r="' + (2 + r() * 2.5).toFixed(1) + '" fill="' + c + '"/>';
+  }
+  return g;
+}
+
 // Primer plano: hojas o pétalos que caen, semillas que suben, luciérnagas de noche y pasto que se mece
 function grassSVG(side, color) {
   let p = '<svg class="grass ' + side + '" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="' + color + '" stroke-linecap="round">';
@@ -627,11 +737,16 @@ function renderFx(s, T) {
   if (reduceMotion) { document.getElementById("fx").innerHTML = ""; return; }
   const R = Math.random, mobile = innerWidth <= 820;
   let html = "";
-  if (T.dark > .55) {
+  if (s.fx === "snow") {
+    for (let i = 0; i < Math.round((mobile ? 9 : 14) * s.fxn); i++) {
+      const sz = (3 + R() * 5).toFixed(1);
+      html += '<span class="drift-item snow" style="left:' + (R() * 100).toFixed(1) + '%;--dx:' + ((R() - .5) * 16).toFixed(0) + 'vw;--rot:0deg;animation-duration:' + (11 + R() * 12).toFixed(1) + 's;animation-delay:-' + (R() * 23).toFixed(1) + 's"><i style="--s:' + sz + 'px;animation-duration:' + (2.4 + R() * 2).toFixed(1) + 's"></i></span>';
+    }
+  } else if (T.dark > .55) {
     for (let i = 0; i < (mobile ? 8 : 14); i++)
       html += '<span class="firefly" style="left:' + (4 + R() * 92).toFixed(1) + '%;top:' + (50 + R() * 45).toFixed(1) + '%;--dx:' + ((R() - .5) * 90).toFixed(0) + 'px;--dy:' + ((R() - .5) * 70).toFixed(0) + 'px;animation-duration:' + (6 + R() * 6).toFixed(1) + 's,' + (2 + R() * 2.5).toFixed(1) + 's;animation-delay:-' + (R() * 8).toFixed(1) + 's,-' + (R() * 3).toFixed(1) + 's"></span>';
   } else {
-    const n = s.fx === "seed" ? (mobile ? 5 : 8) : (mobile ? 6 : 10);
+    const n = Math.round((s.fx === "seed" ? (mobile ? 5 : 8) : (mobile ? 6 : 10)) * (s.fxn || 1));
     for (let i = 0; i < n; i++) {
       const c = s.fxc ? s.fxc[i % s.fxc.length] : "#fff";
       html += '<span class="drift-item ' + s.fx + '" style="left:' + (R() * 100).toFixed(1) + '%;--dx:' + ((R() - .3) * 30).toFixed(0) + 'vw;--rot:' + (30 + R() * 50).toFixed(0) + 'deg;--c:' + c + ';animation-duration:' + (16 + R() * 14).toFixed(1) + 's;animation-delay:-' + (R() * 30).toFixed(1) + 's"><i style="animation-duration:' + (2 + R() * 1.6).toFixed(1) + 's"></i></span>';
@@ -642,10 +757,13 @@ function renderFx(s, T) {
   document.getElementById("fx").innerHTML = html;
 }
 
-let activeScene = "sceneA", sceneIndex = -1, sceneSeed = 0;
+let activeScene = "sceneA", sceneKey = null;
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function renderScene() {
-  const T = timeOfDay(nowDate()), s = SCENES[sceneIndex];
+  const d = nowDate(), T = timeOfDay(d);
+  const s = sceneKey === "dia" ? DAY_SCENES[season(d)] : SCENES[sceneKey];
+  const sceneSeed = hash(s.name) % 100000;
+  renderN++;
   const next = activeScene === "sceneA" ? "sceneB" : "sceneA";
   const el = document.getElementById(next);
   el.querySelector(".blur").innerHTML = sceneSVG(s, sceneSeed, T, false);
@@ -655,19 +773,19 @@ function renderScene() {
   activeScene = next;
   renderFx(s, T);
 }
-function setScene(ref) {
-  let idx = hash(ref) % SCENES.length;
-  if (idx === sceneIndex) idx = (idx + 1) % SCENES.length;
-  sceneIndex = idx;
-  sceneSeed = hash(ref + idx) % 100000;
+// cada emoción tiene su fondo; el versículo del día usa el de la estación
+function setScene() {
+  const key = current || "dia";
+  if (key === sceneKey) return;
+  sceneKey = key;
   renderScene();
 }
 // cada 5 minutos el cielo se actualiza con la hora
-setInterval(() => { if (sceneIndex >= 0 && !document.hidden) { renderScene(); updateDate(); } }, 5 * 60 * 1000);
+setInterval(() => { if (sceneKey && !document.hidden) { renderScene(); updateDate(); } }, 5 * 60 * 1000);
 let lastW = innerWidth, rz = 0;
 addEventListener("resize", () => {
   if (Math.abs(innerWidth - lastW) < 40) return;   // ignora la barra del navegador del celu
-  lastW = innerWidth; clearTimeout(rz); rz = setTimeout(() => sceneIndex >= 0 && renderScene(), 400);
+  lastW = innerWidth; clearTimeout(rz); rz = setTimeout(() => sceneKey && renderScene(), 400);
 });
 // el paisaje acompaña el movimiento del mouse (profundidad)
 if (!reduceMotion && matchMedia("(pointer: fine)").matches) {
@@ -983,7 +1101,7 @@ function showDaily() {
   current = null;
   document.querySelectorAll(".cat").forEach(b => b.setAttribute("aria-pressed", "false"));
   $("another").hidden = true; $("back").hidden = true;
-  $("tag").textContent = "Versículo del día";
+  $("tag").textContent = "Versículo del día · " + DAY_SCENES[season(nowDate())].label;
   shownRef = dailyRef;
   paint(true);
 }
