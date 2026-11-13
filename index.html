@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="es">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<title>Léeme cuando te sientas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Un versículo para cada día y una palabra de fe para cada momento.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Figtree:wght@400;500;600&display=swap">
+<style>
+  /* Concepto: un paisaje sereno nítido en el centro, con el versículo encima;
+     el paisaje se desenfoca hacia los bordes, donde viven las emociones. */
+  :root {
+    --ink: #2f2a33;            /* texto sobre papel */
+    --ink-soft: #6b6370;
+    --glass: rgba(255, 252, 248, .62);
+    --glass-strong: rgba(255, 252, 248, .86);
+    --glass-line: rgba(255, 255, 255, .7);
+    --light: #fffaf3;          /* texto sobre paisaje */
+    --veil: rgba(28, 24, 38, .3);
+    --rose: #c98f98;           /* amor */
+    --sage: #8fa88a;           /* paz */
+    --night: #2b2740;
+    --tg-gold: #f2c230;        /* dorado del logo */
+    --verse: "Cormorant Garamond", "Garamond", "Georgia", serif;
+    --ui: "Figtree", "Segoe UI", system-ui, sans-serif;
+    /* colores del frasco, suavizados */
+    --feliz: #e9c75e; --ansioso: #7fb48a; --enojado: #e39a74;
+    --agradecido: #e3a0b6; --solo: #78a9d4; --triste: #a995cf;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; min-height: 100%;
+    font-family: var(--ui); color: var(--ink);
+    background: var(--night);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Fondo: capa desenfocada + capa nítida con máscara asimétrica ---------- */
+  .scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; transition: opacity 1.4s ease; }
+  .scene.out { opacity: 0; }
+  .scene .blur, .scene .sharp { position: absolute; inset: 0; }
+  .scene svg { width: 100%; height: 100%; display: block; }
+  .scene .blur { filter: blur(16px) saturate(1.05); transform: scale(1.08); }
+  .scene .sharp {
+    -webkit-mask-image: radial-gradient(ellipse 36% 48% at 47% 52%, #000 0%, #000 55%, rgba(0,0,0,.55) 76%, transparent 100%);
+            mask-image: radial-gradient(ellipse 36% 48% at 47% 52%, #000 0%, #000 55%, rgba(0,0,0,.55) 76%, transparent 100%);
+  }
+  .shade {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(25, 22, 35, .28) 0%, transparent 22%),
+      linear-gradient(90deg, rgba(255, 250, 244, .16) 0%, transparent 20%, transparent 80%, rgba(255, 250, 244, .12) 100%);
+  }
+
+  .page {
+    position: relative; z-index: 1;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  header { text-align: center; padding-block: 30px 0; color: var(--light); }
+  .kicker { font-size: .74rem; letter-spacing: .26em; text-transform: uppercase; margin: 0; opacity: .92; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+  h1 {
+    font-family: var(--verse); font-weight: 500; font-style: italic;
+    font-size: clamp(2.1rem, 6vw, 3.3rem); line-height: 1.05; margin: 6px 0 4px;
+    text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.35);
+  }
+  .date { margin: 0; font-size: .92rem; opacity: .95; text-shadow: 0 1px 8px rgba(0,0,0,.4); }
+
+  /* ---------- Escenario principal ---------- */
+  .stage {
+    display: grid; grid-template-columns: 190px minmax(0, 1fr) 190px;
+    gap: 28px; align-items: center;
+    min-height: 68vh; padding-block: 18px 28px;
+  }
+  .side { display: flex; flex-direction: column; gap: 12px; }
+  .side-title {
+    margin: 0 0 2px; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--light); text-shadow: 0 1px 6px rgba(0,0,0,.45); text-align: center;
+  }
+  .cat {
+    --c: var(--sage);
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 16px; border-radius: 999px;
+    border: 1px solid var(--glass-line);
+    background: var(--glass); color: var(--ink);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    font: 500 1rem var(--ui); letter-spacing: .02em; cursor: pointer; text-align: left;
+    transition: transform .25s ease, background .25s ease, box-shadow .25s ease;
+  }
+  .cat::before { content: ""; width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 25%, transparent); }
+  .cat:hover { transform: translateY(-1px); background: var(--glass-strong); }
+  .cat[aria-pressed="true"] { background: var(--glass-strong); box-shadow: 0 0 0 2px var(--c); }
+  [data-cat="feliz"] { --c: var(--feliz); } [data-cat="ansioso"] { --c: var(--ansioso); }
+  [data-cat="enojado"] { --c: var(--enojado); } [data-cat="agradecido"] { --c: var(--agradecido); }
+  [data-cat="solo"] { --c: var(--solo); } [data-cat="triste"] { --c: var(--triste); }
+
+  /* ---------- Versículo ---------- */
+  .verse-card {
+    position: relative; text-align: center; color: var(--light);
+    padding: clamp(40px, 6vw, 64px) clamp(22px, 5vw, 56px) clamp(30px, 4vw, 44px);
+    border-radius: 32px;
+    background: radial-gradient(ellipse at center, var(--veil) 0%, rgba(28,24,38,.18) 70%, transparent 100%);
+  }
+  .tag {
+    display: inline-block; font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 999px; margin-bottom: 18px;
+    background: rgba(255, 250, 243, .2); border: 1px solid rgba(255, 250, 243, .45);
+    text-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  .verse {
+    margin: 0 auto; max-width: 30ch;
+    font-family: var(--verse); font-weight: 600;
+    font-size: clamp(1.75rem, 4.3vw, 2.75rem); line-height: 1.28;
+    text-wrap: balance;
+    text-shadow: 0 2px 4px rgba(0,0,0,.35), 0 4px 28px rgba(0,0,0,.45);
+    transition: opacity .45s ease;
+  }
+  .ref {
+    margin: 18px 0 0; font-size: 1rem; letter-spacing: .08em;
+    text-shadow: 0 1px 6px rgba(0,0,0,.5);
+  }
+  .ref .v { opacity: .8; font-size: .85rem; }
+  .note { margin: 6px 0 0; min-height: 1.2em; font-size: .8rem; opacity: .9; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+  .fade { opacity: 0; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 22px; }
+  .btn {
+    border: 1px solid rgba(255, 250, 243, .55); background: rgba(255, 250, 243, .14);
+    color: var(--light); padding: 9px 18px; border-radius: 999px; cursor: pointer;
+    font: 500 .9rem var(--ui);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+  .btn:hover { background: rgba(255, 250, 243, .26); }
+  .btn.solid { background: var(--light); color: var(--ink); border-color: var(--light); }
+
+  /* Flechita de versión, en la esquina del versículo */
+  .ver-wrap { position: absolute; top: 14px; right: 14px; text-align: left; }
+  .ver-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid rgba(255, 250, 243, .55); background: rgba(255, 250, 243, .16);
+    color: var(--light); font: 600 .74rem var(--ui); letter-spacing: .08em;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+  .ver-toggle svg { width: 14px; height: 14px; transition: transform .2s ease; }
+  .ver-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .ver-menu {
+    position: absolute; right: 0; top: calc(100% + 8px); z-index: 5; width: min(290px, calc(100vw - 48px));
+    background: var(--glass-strong); color: var(--ink);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-line); border-radius: 18px; padding: 6px;
+    box-shadow: 0 14px 40px rgba(20, 15, 30, .28);
+  }
+  .ver-item {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    width: 100%; padding: 9px 12px; border: 0; border-radius: 12px;
+    background: transparent; color: var(--ink); text-decoration: none; text-align: left;
+    font: 500 .88rem var(--ui); cursor: pointer;
+  }
+  .ver-item b { font-weight: 600; letter-spacing: .04em; white-space: nowrap; }
+  .ver-item span { color: var(--ink-soft); font-size: .78rem; }
+  .ver-item:hover { background: rgba(201, 143, 152, .16); }
+  .ver-item[aria-current="true"] { background: rgba(143, 168, 138, .25); }
+
+  .cat:focus-visible, .btn:focus-visible, .ver-toggle:focus-visible, .ver-item:focus-visible, .pray-link:focus-visible {
+    outline: 2px solid var(--light); outline-offset: 3px;
+  }
+
+  .pray-link {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 4px;
+    color: var(--light); text-decoration: none; font-size: .9rem; letter-spacing: .04em;
+    text-shadow: 0 1px 6px rgba(0,0,0,.45);
+  }
+  .pray-link::before { content: ""; width: 26px; height: 1px; background: currentColor; opacity: .7; }
+  .pray-link::after { content: ""; width: 26px; height: 1px; background: currentColor; opacity: .7; }
+
+  /* ---------- Oración de entrega ---------- */
+  .prayer {
+    max-width: 780px; margin: 10px auto 34px;
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-line); border-radius: 36px;
+    padding: clamp(30px, 6vw, 60px) clamp(22px, 6vw, 60px);
+    text-align: center; box-shadow: 0 24px 60px rgba(20, 15, 30, .25);
+  }
+  .cross { width: 22px; height: 34px; margin: 0 auto 14px; position: relative; }
+  .cross::before, .cross::after { content: ""; position: absolute; background: var(--rose); border-radius: 2px; }
+  .cross::before { left: 10px; top: 0; width: 2px; height: 34px; }
+  .cross::after { left: 0; top: 9px; width: 22px; height: 2px; }
+  .prayer .kicker { color: var(--rose); text-shadow: none; opacity: 1; }
+  .prayer h2 { font-family: var(--verse); font-weight: 500; font-style: italic; font-size: clamp(2.1rem, 5.4vw, 3rem); margin: 6px 0 8px; line-height: 1.05; }
+  .prayer .intro { color: var(--ink-soft); max-width: 46ch; margin: 0 auto 26px; line-height: 1.6; }
+  .base { margin: 0 auto 30px; max-width: 560px; }
+  .base p { margin: 0; font-family: var(--verse); font-size: 1.28rem; line-height: 1.5; font-style: italic; color: var(--ink); }
+  .base cite { display: block; margin-top: 10px; font-style: normal; font-size: .82rem; letter-spacing: .14em; text-transform: uppercase; color: var(--sage); font-weight: 600; }
+  .model-title { margin: 0 0 12px; font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); }
+  .model {
+    margin: 0 auto 32px; max-width: 600px;
+    padding: clamp(24px, 5vw, 40px);
+    border-radius: 28px;
+    background: linear-gradient(160deg, #fff7f3 0%, #fbeff0 55%, #f1f3ea 100%);
+    border: 1px solid rgba(201, 143, 152, .35);
+    font-family: var(--verse); font-weight: 600;
+    font-size: clamp(1.3rem, 3.2vw, 1.55rem); line-height: 1.6; color: #3d3340;
+  }
+  .model p { margin: 0; }
+  .after h3 { font-family: var(--verse); font-weight: 600; font-size: 1.5rem; margin: 0 0 14px; }
+  .after ul { list-style: none; padding: 0; margin: 0 auto; max-width: 480px; text-align: left; display: grid; gap: 8px; }
+  .after li { padding: 11px 16px 11px 38px; border-radius: 16px; background: rgba(143, 168, 138, .14); position: relative; line-height: 1.45; }
+  .after li::before { content: ""; position: absolute; left: 16px; top: 18px; width: 8px; height: 8px; border-radius: 50%; background: var(--sage); }
+  .back { display: inline-block; margin-top: 22px; color: var(--rose); font-weight: 600; text-decoration: none; }
+
+  /* ---------- Iglesia Torre de Gracia (colores del logo: azul noche y dorado) ---------- */
+  .church-badge { display: inline-block; margin-bottom: 8px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255, 250, 243, .55), 0 6px 20px rgba(0,0,0,.3); }
+  .church-badge img { display: block; width: 58px; height: 58px; border-radius: 50%; }
+  .church {
+    max-width: 780px; margin: 0 auto 34px; text-align: center;
+    color: #f6f1e4;
+    background: linear-gradient(165deg, rgba(23, 28, 66, .92) 0%, rgba(14, 18, 46, .94) 100%);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    border: 1px solid rgba(242, 194, 48, .35); border-radius: 36px;
+    padding: clamp(30px, 6vw, 56px) clamp(22px, 6vw, 56px);
+    box-shadow: 0 24px 60px rgba(10, 12, 35, .4);
+  }
+  .church-logo { width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 14px; display: block; box-shadow: 0 0 0 4px rgba(242, 194, 48, .55), 0 0 40px rgba(242, 194, 48, .25); }
+  .church .kicker { color: var(--tg-gold); text-shadow: none; opacity: 1; }
+  .church h2 { font-family: var(--verse); font-weight: 500; font-style: italic; font-size: clamp(2rem, 5vw, 2.7rem); margin: 6px 0 16px; line-height: 1.1; text-wrap: balance; }
+  .vision { font-family: var(--verse); font-weight: 600; font-size: clamp(1.3rem, 3.2vw, 1.6rem); line-height: 1.5; max-width: 34ch; margin: 0 auto 28px; text-wrap: balance; }
+  .pillars { list-style: none; padding: 0; margin: 0 auto 24px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 620px; }
+  .pillars li { padding: 16px 12px; border-radius: 20px; background: rgba(242, 194, 48, .1); border: 1px solid rgba(242, 194, 48, .3); display: grid; gap: 4px; }
+  .pillars b { color: var(--tg-gold); font-size: .82rem; letter-spacing: .18em; text-transform: uppercase; }
+  .pillars span { font-size: .92rem; line-height: 1.4; color: #e6e1d4; }
+  .welcome { margin: 0; color: #cfc9ba; font-size: .95rem; }
+  @media (max-width: 560px) { .pillars { grid-template-columns: 1fr; } }
+
+  footer { text-align: center; color: var(--light); font-size: .76rem; padding-block: 0 26px; opacity: .9; text-shadow: 0 1px 4px rgba(0,0,0,.5); }
+  footer a { color: inherit; }
+
+  /* ---------- Celular ---------- */
+  @media (max-width: 820px) {
+    .stage { grid-template-columns: 1fr 1fr; gap: 10px; min-height: 0; }
+    .verse-card { grid-column: 1 / -1; order: -1; margin-bottom: 8px; padding-top: 58px; }
+    .side-title { text-align: left; padding-left: 6px; }
+    .cat { padding: 12px 14px; font-size: .95rem; }
+    .scene .sharp {
+      -webkit-mask-image: radial-gradient(ellipse 62% 30% at 46% 34%, #000 0%, #000 50%, rgba(0,0,0,.5) 75%, transparent 100%);
+              mask-image: radial-gradient(ellipse 62% 30% at 46% 34%, #000 0%, #000 50%, rgba(0,0,0,.5) 75%, transparent 100%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .scene, .verse, .cat { transition: none; }
+  }
+</style>
+
+<div class="scene" id="sceneA"><div class="blur"></div><div class="sharp"></div></div>
+<div class="scene out" id="sceneB"><div class="blur"></div><div class="sharp"></div></div>
+<div class="shade"></div>
+
+<div class="page">
+  <div class="wrap">
+    <header>
+      <a class="church-badge" href="#iglesia" title="Iglesia Torre de Gracia">
+        <img src="logo-torre-de-gracia.png" alt="Logo de la Iglesia Torre de Gracia" width="58" height="58">
+      </a>
+      <p class="kicker">Iglesia Torre de Gracia · Versículos bíblicos</p>
+      <h1>Léeme cuando te sientas…</h1>
+      <p class="date" id="today"></p>
+    </header>
+
+    <main class="stage">
+      <nav class="side" aria-label="Emociones">
+        <p class="side-title">Cuando te sientas</p>
+        <button class="cat" data-cat="feliz" aria-pressed="false">Feliz</button>
+        <button class="cat" data-cat="ansioso" aria-pressed="false">Ansioso</button>
+        <button class="cat" data-cat="enojado" aria-pressed="false">Enojado</button>
+      </nav>
+
+      <section class="verse-card" id="card" aria-live="polite">
+        <div class="ver-wrap">
+          <button class="ver-toggle" id="verToggle" aria-expanded="false" aria-haspopup="true" aria-controls="verMenu" title="Cambiar versión de la Biblia">
+            <span id="verLabel">RVR1960</span>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+          </button>
+          <div class="ver-menu" id="verMenu" hidden></div>
+        </div>
+
+        <span class="tag" id="tag">Versículo del día</span>
+        <p class="verse" id="verse"></p>
+        <p class="ref" id="ref"></p>
+        <p class="note" id="note"></p>
+
+        <div class="actions">
+          <button class="btn" id="another" hidden>Otro versículo</button>
+          <button class="btn" id="back" hidden>Volver al del día</button>
+          <button class="btn solid" id="share">Copiar versículo</button>
+        </div>
+        <a class="pray-link" href="#oracion">Oración de entrega</a>
+      </section>
+
+      <nav class="side" aria-label="Más emociones">
+        <p class="side-title">Cuando te sientas</p>
+        <button class="cat" data-cat="agradecido" aria-pressed="false">Agradecido</button>
+        <button class="cat" data-cat="solo" aria-pressed="false">Solo</button>
+        <button class="cat" data-cat="triste" aria-pressed="false">Triste</button>
+      </nav>
+    </main>
+
+    <section class="prayer" id="oracion">
+      <div class="cross" aria-hidden="true"></div>
+      <p class="kicker">Un paso que cambia todo</p>
+      <h2>Oración de entrega</h2>
+      <p class="intro">Si hoy querés recibir a Jesús en tu corazón, podés hacer esta oración en voz alta, con fe.</p>
+
+      <blockquote class="base">
+        <p>«Que si confesares con tu boca que Jesús es el Señor, y creyeres en tu corazón que Dios le levantó de los muertos, serás salvo. Porque con el corazón se cree para justicia, pero con la boca se confiesa para salvación.»</p>
+        <cite>Romanos 10:9-10</cite>
+      </blockquote>
+
+      <p class="model-title">Repetí conmigo</p>
+      <div class="model">
+        <p>Señor Jesús, te pido hoy que entres en mi corazón y que seas el Señor de mi vida.
+        Te doy gracias por morir en la cruz por todos mis pecados, y ahora me declaro libre
+        de todo pecado, de toda culpa, de toda condenación y toda maldición, en el nombre de Jesús.
+        Gracias, Señor, porque recibo vida eterna y vida en abundancia, y porque mi nombre
+        está siendo escrito en el libro de la vida.
+        En el nombre de Jesús. Amén.</p>
+      </div>
+
+      <div class="after">
+        <h3>¿Hiciste esta oración? Bienvenido a la familia de Dios</h3>
+        <ul>
+          <li>Contáselo a alguno de los líderes: queremos acompañarte.</li>
+          <li>Empezá a leer la Biblia: el evangelio de Juan es un gran comienzo.</li>
+          <li>Hablá con Dios todos los días, como con un amigo.</li>
+          <li>Sumate a las reuniones de jóvenes y de la iglesia.</li>
+        </ul>
+      </div>
+      <a class="back" href="#card">Volver al versículo</a>
+    </section>
+
+    <section class="church" id="iglesia">
+      <img class="church-logo" src="logo-torre-de-gracia.png" alt="Logo de la Iglesia Torre de Gracia" width="110" height="110">
+      <p class="kicker">Iglesia Torre de Gracia</p>
+      <h2>Nuestra visión y propósito</h2>
+      <p class="vision">Somos un movimiento de encuentros de amistad que vivimos para predicar el evangelio a cada persona, pastorear creyentes y plantar iglesias en donde seamos guiados.</p>
+      <ul class="pillars">
+        <li><b>Predicar</b><span>el evangelio a cada persona</span></li>
+        <li><b>Pastorear</b><span>a cada creyente</span></li>
+        <li><b>Plantar</b><span>iglesias donde Dios nos guíe</span></li>
+      </ul>
+      <p class="welcome">Gracias por venir. Acá siempre vas a tener un lugar.</p>
+    </section>
+
+    <footer>Iglesia Torre de Gracia · Un mensaje de fe para cada momento · Otras versiones vía <a href="https://bolls.life" target="_blank" rel="noopener">bolls.life</a> y <a href="https://www.biblegateway.com" target="_blank" rel="noopener">Bible Gateway</a></footer>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// PAISAJES (dibujados en la página: siempre nítidos, sin fotos externas)
+// =====================================================================
+const SCENES = [
+  { name: "Amanecer en las montañas", sky: ["#a9b8de", "#e9c9cf", "#fbe2c8"], sun: { x: .63, y: .5, r: 46, c: "#fff3df", g: "#ffd7a6" }, clouds: 4, birds: true,
+    layers: [ { t: "m", b: .56, a: .17, c: "#c7b7d6" }, { t: "m", b: .64, a: .12, c: "#a898c2" }, { t: "h", b: .74, a: .05, c: "#8a7fae" }, { t: "f", b: .86, a: .03, c: "#5f5a86" } ] },
+  { name: "Lago sereno", sky: ["#8fb8dc", "#cfe1ec", "#f3efe2"], sun: { x: .3, y: .38, r: 34, c: "#fffbea", g: "#fff1c4" }, clouds: 5, birds: true, water: .7, wc: ["#a8c8dc", "#6f9cbd"],
+    layers: [ { t: "m", b: .56, a: .2, c: "#b3c6d6" }, { t: "m", b: .64, a: .12, c: "#87a3ba" }, { t: "f", b: .7, a: .015, c: "#4f7766" } ] },
+  { name: "Campo de trigo", sky: ["#f0c49f", "#f6dcb6", "#fcefd5"], sun: { x: .5, y: .55, r: 52, c: "#fff4d6", g: "#ffd88f" }, clouds: 3, birds: true,
+    layers: [ { t: "h", b: .66, a: .05, c: "#d9b98a" }, { t: "h", b: .72, a: .05, c: "#e1b866" }, { t: "h", b: .8, a: .04, c: "#cf9f4e" }, { t: "h", b: .9, a: .03, c: "#b8843d" } ] },
+  { name: "Mar al atardecer", sky: ["#7d88bf", "#d99aa6", "#f6c99a"], sun: { x: .55, y: .58, r: 50, c: "#fff0d2", g: "#ffbe8c" }, clouds: 4, birds: true, water: .64, wc: ["#e3a99f", "#6e6f9e"],
+    layers: [ { t: "m", b: .62, a: .05, c: "#8a7da6" } ] },
+  { name: "Bosque en calma", sky: ["#bcdacf", "#e2ede0", "#f4f1dc"], sun: { x: .7, y: .32, r: 30, c: "#fffde8", g: "#f5f2c6" }, clouds: 3, birds: false,
+    layers: [ { t: "m", b: .6, a: .14, c: "#a9c2b0" }, { t: "f", b: .7, a: .03, c: "#7fa38a" }, { t: "f", b: .8, a: .03, c: "#5b8468" }, { t: "f", b: .9, a: .02, c: "#3c6550" } ] },
+  { name: "Noche estrellada", sky: ["#1d2444", "#38426e", "#6a6a9a"], moon: { x: .7, y: .27, r: 30 }, stars: 140, clouds: 0, birds: false, night: true,
+    layers: [ { t: "m", b: .62, a: .16, c: "#4a4d7a" }, { t: "m", b: .7, a: .1, c: "#363961" }, { t: "f", b: .82, a: .03, c: "#23264a" } ] },
+  { name: "Colinas rosadas", sky: ["#e7b9c4", "#f3d6d3", "#fbece2"], sun: { x: .38, y: .5, r: 42, c: "#fff5ea", g: "#ffd9cc" }, clouds: 4, birds: true,
+    layers: [ { t: "h", b: .62, a: .07, c: "#dcb2bf" }, { t: "h", b: .7, a: .06, c: "#c897ab" }, { t: "h", b: .8, a: .05, c: "#a97d97" }, { t: "h", b: .9, a: .03, c: "#86637e" } ] },
+  { name: "Valle verde", sky: ["#9ec9e6", "#d2e6ee", "#eef3e3"], sun: { x: .2, y: .3, r: 32, c: "#fffcea", g: "#fff3c2" }, clouds: 6, birds: true,
+    layers: [ { t: "m", b: .55, a: .2, c: "#b6c9d8" }, { t: "h", b: .68, a: .06, c: "#a6c98e" }, { t: "h", b: .78, a: .05, c: "#82b06e" }, { t: "f", b: .88, a: .02, c: "#557f4e" } ] },
+];
+
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hash(s) { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+
+const W = 1600, H = 1000;
+function ridge(L0, r) {
+  const L = Object.assign({}, L0, { b: L0.b - .07 });   // paisaje un poco más arriba, detrás del versículo
+  const ph = [r() * 6.28, r() * 6.28, r() * 6.28], f = [.8 + r() * 1.4, 2.5 + r() * 3, 7 + r() * 6];
+  let d = "M0 " + H;
+  for (let x = 0; x <= W; x += 10) {
+    const t = x / W;
+    let y;
+    if (L.t === "m") {
+      const p = Math.abs(Math.sin(t * f[0] * Math.PI + ph[0]));
+      y = L.b * H - L.a * H * (Math.pow(p, 1.6) * .75 + .25 * Math.sin(t * f[1] * Math.PI + ph[1]));
+    } else {
+      y = L.b * H + L.a * H * (.65 * Math.sin(t * f[0] * Math.PI + ph[0]) + .25 * Math.sin(t * f[1] * Math.PI + ph[1]) + .1 * Math.sin(t * f[2] * Math.PI + ph[2]));
+      if (L.t === "f") y -= (x / 10) % 3 === 0 ? 10 + r() * 22 : r() * 6;   // copas de árboles
+    }
+    d += " L" + x + " " + y.toFixed(1);
+  }
+  return d + " L" + W + " " + H + " Z";
+}
+
+function sceneSVG(s, seed) {
+  const r = rng(seed);
+  let g = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs>' +
+    '<linearGradient id="sk' + seed + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + s.sky[0] + '"/><stop offset=".55" stop-color="' + s.sky[1] + '"/><stop offset="1" stop-color="' + s.sky[2] + '"/></linearGradient>';
+  if (s.sun) g += '<radialGradient id="gl' + seed + '"><stop offset="0" stop-color="' + s.sun.g + '" stop-opacity=".95"/><stop offset="1" stop-color="' + s.sun.g + '" stop-opacity="0"/></radialGradient>';
+  if (s.water) g += '<linearGradient id="wa' + seed + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + s.wc[0] + '"/><stop offset="1" stop-color="' + s.wc[1] + '"/></linearGradient>';
+  g += '</defs><rect width="' + W + '" height="' + H + '" fill="url(#sk' + seed + ')"/>';
+  if (s.stars) for (let i = 0; i < s.stars; i++) g += '<circle cx="' + (r() * W).toFixed(0) + '" cy="' + (r() * H * .6).toFixed(0) + '" r="' + (r() * 1.6 + .4).toFixed(1) + '" fill="#fff" opacity="' + (r() * .6 + .3).toFixed(2) + '"/>';
+  if (s.moon) g += '<circle cx="' + s.moon.x * W + '" cy="' + s.moon.y * H + '" r="' + s.moon.r * 4 + '" fill="#cfd3f2" opacity=".12"/><circle cx="' + s.moon.x * W + '" cy="' + s.moon.y * H + '" r="' + s.moon.r + '" fill="#f4f1e6"/>';
+  if (s.sun) g += '<circle cx="' + s.sun.x * W + '" cy="' + s.sun.y * H + '" r="' + s.sun.r * 6 + '" fill="url(#gl' + seed + ')"/><circle cx="' + s.sun.x * W + '" cy="' + s.sun.y * H + '" r="' + s.sun.r + '" fill="' + s.sun.c + '"/>';
+  for (let i = 0; i < s.clouds; i++) {
+    const cx = r() * W, cy = 80 + r() * H * .3, w = 90 + r() * 140;
+    g += '<g fill="#fff" opacity="' + (.35 + r() * .35).toFixed(2) + '"><ellipse cx="' + cx.toFixed(0) + '" cy="' + cy.toFixed(0) + '" rx="' + w.toFixed(0) + '" ry="' + (w * .16).toFixed(0) + '"/><ellipse cx="' + (cx + w * .25).toFixed(0) + '" cy="' + (cy - w * .1).toFixed(0) + '" rx="' + (w * .45).toFixed(0) + '" ry="' + (w * .2).toFixed(0) + '"/></g>';
+  }
+  if (s.birds) {
+    const bx = W * (.2 + r() * .5), by = H * (.2 + r() * .15);
+    g += '<g fill="none" stroke="#4b4659" stroke-width="2.2" stroke-linecap="round" opacity=".5">';
+    for (let i = 0; i < 3; i++) { const x = bx + i * 34 + r() * 10, y = by + (i % 2) * 22, k = 8 + r() * 4; g += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' q' + k.toFixed(0) + ' -' + k.toFixed(0) + ' ' + (2 * k).toFixed(0) + ' 0 q' + k.toFixed(0) + ' -' + k.toFixed(0) + ' ' + (2 * k).toFixed(0) + ' 0"/>'; }
+    g += '</g>';
+  }
+  s.layers.forEach((L, i) => {
+    if (s.water && i === s.layers.length - 1 && L.b <= s.water + .01) {
+      g += '<path d="' + ridge(L, r) + '" fill="' + L.c + '"/>';
+      return;
+    }
+    g += '<path d="' + ridge(L, r) + '" fill="' + L.c + '"/>';
+  });
+  if (s.water) {
+    const wy = (s.water - .07) * H;
+    g += '<rect x="0" y="' + wy + '" width="' + W + '" height="' + (H - wy) + '" fill="url(#wa' + seed + ')"/>';
+    const sx = (s.sun || s.moon).x * W;
+    for (let i = 0; i < 9; i++) {
+      const y = wy + 14 + i * ((H - wy) / 11), w = 120 - i * 10 + r() * 30;
+      g += '<rect x="' + (sx - w / 2 + (r() - .5) * 30).toFixed(0) + '" y="' + y.toFixed(0) + '" width="' + w.toFixed(0) + '" height="3" rx="1.5" fill="#fff6e4" opacity="' + (.55 - i * .05).toFixed(2) + '"/>';
+    }
+  }
+  return g + "</svg>";
+}
+
+let activeScene = "sceneA", sceneIndex = -1;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function setScene(ref) {
+  let idx = hash(ref) % SCENES.length;
+  if (idx === sceneIndex) idx = (idx + 1) % SCENES.length;
+  sceneIndex = idx;
+  const svg = sceneSVG(SCENES[idx], hash(ref + idx) % 100000);
+  const next = activeScene === "sceneA" ? "sceneB" : "sceneA";
+  const el = document.getElementById(next);
+  el.querySelector(".blur").innerHTML = svg;
+  el.querySelector(".sharp").innerHTML = svg;
+  el.classList.remove("out");
+  document.getElementById(activeScene).classList.add("out");
+  activeScene = next;
+}
+
+// =====================================================================
+// VERSIONES
+// =====================================================================
+const VERSIONS = [
+  { code: "RVR1960", api: "RV1960", name: "Reina-Valera 1960" },
+  { code: "NTV",     api: "NTV",    name: "Nueva Traducción Viviente" },
+  { code: "PDT",     api: "PDT",    name: "Palabra de Dios para Todos" },
+  { code: "LBLA",    api: "LBLA",   name: "La Biblia de las Américas" },
+  { code: "NVI",     api: null,     name: "Nueva Versión Internacional" },
+  { code: "DHH",     api: null,     name: "Dios Habla Hoy" },
+];
+const BOOKS = {
+  "Génesis": 1, "Deuteronomio": 5, "Josué": 6, "1 Crónicas": 13, "Nehemías": 16,
+  "Salmos": 19, "Proverbios": 20, "Eclesiastés": 21, "Isaías": 23, "Jeremías": 24,
+  "Lamentaciones": 25, "Miqueas": 33, "Habacuc": 35, "Sofonías": 36,
+  "Mateo": 40, "Lucas": 42, "Juan": 43, "Romanos": 45, "1 Corintios": 46, "2 Corintios": 47,
+  "Gálatas": 48, "Efesios": 49, "Filipenses": 50, "Colosenses": 51,
+  "1 Tesalonicenses": 52, "2 Tesalonicenses": 53, "1 Timoteo": 54, "2 Timoteo": 55,
+  "Hebreos": 58, "Santiago": 59, "1 Pedro": 60, "1 Juan": 62, "Apocalipsis": 66,
+};
+
+// =====================================================================
+// TEXTOS RVR1960 GUARDADOS EN LA PÁGINA
+// =====================================================================
+const LOCAL = {
+  "Lamentaciones 3:22-23": "Por la misericordia de Jehová no hemos sido consumidos, porque nunca decayeron sus misericordias. Nuevas son cada mañana; grande es tu fidelidad.",
+  "Salmos 118:24": "Este es el día que hizo Jehová; nos gozaremos y alegraremos en él.",
+  "Jeremías 29:11": "Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis.",
+  "Filipenses 4:13": "Todo lo puedo en Cristo que me fortalece.",
+  "Josué 1:9": "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo en dondequiera que vayas.",
+  "Proverbios 3:5-6": "Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas.",
+  "Juan 3:16": "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.",
+  "1 Timoteo 4:12": "Ninguno tenga en poco tu juventud, sino sé ejemplo de los creyentes en palabra, conducta, amor, espíritu, fe y pureza.",
+  "Romanos 8:28": "Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados.",
+  "Salmos 23:1": "Jehová es mi pastor; nada me faltará.",
+  "2 Corintios 5:17": "De modo que si alguno está en Cristo, nueva criatura es; las cosas viejas pasaron; he aquí todas son hechas nuevas.",
+  "Salmos 37:5": "Encomienda a Jehová tu camino, y confía en él; y él hará.",
+  "Mateo 6:33": "Mas buscad primeramente el reino de Dios y su justicia, y todas estas cosas os serán añadidas.",
+  "Salmos 119:105": "Lámpara es a mis pies tu palabra, y lumbrera a mi camino.",
+  "Sofonías 3:17": "Jehová está en medio de ti, poderoso, él salvará; se gozará sobre ti con alegría, callará de amor, se regocijará sobre ti con cánticos.",
+  "Juan 14:27": "La paz os dejo, mi paz os doy; yo no os la doy como el mundo la da. No se turbe vuestro corazón, ni tenga miedo.",
+  "Salmos 119:9": "¿Con qué limpiará el joven su camino? Con guardar tu palabra.",
+  "Salmos 46:1": "Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.",
+  "Isaías 40:31": "Pero los que esperan a Jehová tendrán nuevas fuerzas; levantarán alas como las águilas; correrán, y no se cansarán; caminarán, y no se fatigarán.",
+  "Salmos 34:8": "Gustad, y ved que es bueno Jehová; dichoso el hombre que confía en él.",
+  "Apocalipsis 3:20": "He aquí, yo estoy a la puerta y llamo; si alguno oye mi voz y abre la puerta, entraré a él, y cenaré con él, y él conmigo.",
+  "Romanos 12:2": "No os conforméis a este siglo, sino transformaos por medio de la renovación de vuestro entendimiento, para que comprobéis cuál sea la buena voluntad de Dios, agradable y perfecta.",
+  "Salmos 16:11": "Me mostrarás la senda de la vida; en tu presencia hay plenitud de gozo; delicias a tu diestra para siempre.",
+  "Juan 8:12": "Yo soy la luz del mundo; el que me sigue, no andará en tinieblas, sino que tendrá la luz de la vida.",
+  "Salmos 121:1-2": "Alzaré mis ojos a los montes; ¿de dónde vendrá mi socorro? Mi socorro viene de Jehová, que hizo los cielos y la tierra.",
+  "Salmos 27:1": "Jehová es mi luz y mi salvación; ¿de quién temeré? Jehová es la fortaleza de mi vida; ¿de quién he de atemorizarme?",
+  "Efesios 2:8": "Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios.",
+  "Isaías 41:10": "No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo; siempre te ayudaré, siempre te sustentaré con la diestra de mi justicia.",
+  "Mateo 11:28": "Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.",
+  "1 Pedro 5:7": "Echando toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros.",
+  "Isaías 43:2": "Cuando pases por las aguas, yo estaré contigo; y si por los ríos, no te anegarán. Cuando pases por el fuego, no te quemarás, ni la llama arderá en ti.",
+  "Jeremías 31:3": "Con amor eterno te he amado; por tanto, te prolongué mi misericordia.",
+  "Salmos 34:18": "Cercano está Jehová a los quebrantados de corazón; y salva a los contritos de espíritu.",
+  "Salmos 30:5": "Por la noche durará el lloro, y a la mañana vendrá la alegría.",
+  "Salmos 147:3": "Él sana a los quebrantados de corazón, y venda sus heridas.",
+  "Mateo 5:4": "Bienaventurados los que lloran, porque ellos recibirán consolación.",
+  "Salmos 42:11": "¿Por qué te abates, oh alma mía, y por qué te turbas dentro de mí? Espera en Dios; porque aún he de alabarle, salvación mía y Dios mío.",
+  "Apocalipsis 21:4": "Enjugará Dios toda lágrima de los ojos de ellos; y ya no habrá muerte, ni habrá más llanto, ni clamor, ni dolor; porque las primeras cosas pasaron.",
+  "Juan 16:22": "También vosotros ahora tenéis tristeza; pero os volveré a ver, y se gozará vuestro corazón, y nadie os quitará vuestro gozo.",
+  "Salmos 126:5": "Los que sembraron con lágrimas, con regocijo segarán.",
+  "Filipenses 4:6-7": "Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con acción de gracias. Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús.",
+  "Mateo 6:34": "Así que, no os afanéis por el día de mañana, porque el día de mañana traerá su afán. Basta a cada día su propio mal.",
+  "Isaías 26:3": "Tú guardarás en completa paz a aquel cuyo pensamiento en ti persevera; porque en ti ha confiado.",
+  "Salmos 55:22": "Echa sobre Jehová tu carga, y él te sustentará; no dejará para siempre caído al justo.",
+  "Salmos 94:19": "En la multitud de mis pensamientos dentro de mí, tus consolaciones alegraban mi alma.",
+  "Mateo 6:26": "Mirad las aves del cielo, que no siembran, ni siegan, ni recogen en graneros; y vuestro Padre celestial las alimenta. ¿No valéis vosotros mucho más que ellas?",
+  "Salmos 4:8": "En paz me acostaré, y asimismo dormiré; porque solo tú, Jehová, me haces vivir confiado.",
+  "Salmos 56:3": "En el día que temo, yo en ti confío.",
+  "Hebreos 13:5": "No te desampararé, ni te dejaré.",
+  "Mateo 28:20": "Y he aquí yo estoy con vosotros todos los días, hasta el fin del mundo.",
+  "Salmos 27:10": "Aunque mi padre y mi madre me dejaran, con todo, Jehová me recogerá.",
+  "Deuteronomio 31:6": "Esforzaos y cobrad ánimo; no temáis, ni tengáis temor de ellos, porque Jehová tu Dios es el que va contigo; no te dejará, ni te desamparará.",
+  "Salmos 139:9-10": "Si tomare las alas del alba y habitare en el extremo del mar, aun allí me guiará tu mano, y me asirá tu diestra.",
+  "Salmos 23:4": "Aunque ande en valle de sombra de muerte, no temeré mal alguno, porque tú estarás conmigo; tu vara y tu cayado me infundirán aliento.",
+  "Efesios 4:26": "Airaos, pero no pequéis; no se ponga el sol sobre vuestro enojo.",
+  "Santiago 1:19-20": "Por esto, mis amados hermanos, todo hombre sea pronto para oír, tardo para hablar, tardo para airarse; porque la ira del hombre no obra la justicia de Dios.",
+  "Proverbios 15:1": "La blanda respuesta quita la ira; mas la palabra áspera hace subir el furor.",
+  "Proverbios 16:32": "Mejor es el que tarda en airarse que el fuerte; y el que se enseñorea de su espíritu, que el que toma una ciudad.",
+  "Efesios 4:31-32": "Quítense de vosotros toda amargura, enojo, ira, gritería y maledicencia, y toda malicia. Antes sed benignos unos con otros, misericordiosos, perdonándoos unos a otros, como Dios también os perdonó a vosotros en Cristo.",
+  "Colosenses 3:13": "Soportándoos unos a otros, y perdonándoos unos a otros si alguno tuviere queja contra otro. De la manera que Cristo os perdonó, así también hacedlo vosotros.",
+  "Romanos 12:21": "No seas vencido de lo malo, sino vence con el bien el mal.",
+  "Salmos 37:8": "Deja la ira, y desecha el enojo; no te excites en manera alguna a hacer lo malo.",
+  "Proverbios 19:11": "La cordura del hombre detiene su furor, y su honra es pasar por alto la ofensa.",
+  "Filipenses 4:4": "Regocijaos en el Señor siempre. Otra vez digo: ¡Regocijaos!",
+  "Nehemías 8:10": "Porque el gozo de Jehová es vuestra fuerza.",
+  "Salmos 100:1-2": "Cantad alegres a Dios, habitantes de toda la tierra. Servid a Jehová con alegría; venid ante su presencia con regocijo.",
+  "Salmos 126:3": "Grandes cosas ha hecho Jehová con nosotros; estaremos alegres.",
+  "Salmos 32:11": "Alegraos en Jehová y gozaos, justos; y cantad con júbilo todos vosotros los rectos de corazón.",
+  "Romanos 15:13": "Y el Dios de esperanza os llene de todo gozo y paz en el creer, para que abundéis en esperanza por el poder del Espíritu Santo.",
+  "Proverbios 17:22": "El corazón alegre constituye buen remedio; mas el espíritu triste seca los huesos.",
+  "1 Tesalonicenses 5:18": "Dad gracias en todo, porque esta es la voluntad de Dios para con vosotros en Cristo Jesús.",
+  "Salmos 136:1": "Alabad a Jehová, porque él es bueno, porque para siempre es su misericordia.",
+  "Salmos 103:2": "Bendice, alma mía, a Jehová, y no olvides ninguno de sus beneficios.",
+  "Santiago 1:17": "Toda buena dádiva y todo don perfecto desciende de lo alto, del Padre de las luces, en el cual no hay mudanza, ni sombra de variación.",
+  "Colosenses 3:17": "Y todo lo que hacéis, sea de palabra o de hecho, hacedlo todo en el nombre del Señor Jesús, dando gracias a Dios Padre por medio de él.",
+  "Salmos 100:4": "Entrad por sus puertas con acción de gracias, por sus atrios con alabanza; alabadle, bendecid su nombre.",
+  "Salmos 9:1": "Te alabaré, oh Jehová, con todo mi corazón; contaré todas tus maravillas.",
+  "2 Corintios 9:15": "¡Gracias a Dios por su don inefable!",
+};
+
+const DAILY = [
+  "Lamentaciones 3:22-23", "Salmos 118:24", "Jeremías 29:11", "Filipenses 4:13", "Josué 1:9",
+  "Proverbios 3:5-6", "Juan 3:16", "1 Timoteo 4:12", "Romanos 8:28", "Salmos 23:1",
+  "2 Corintios 5:17", "Salmos 37:5", "Mateo 6:33", "Salmos 119:105", "Sofonías 3:17",
+  "Juan 14:27", "Salmos 119:9", "Salmos 46:1", "Isaías 40:31", "Salmos 34:8",
+  "Apocalipsis 3:20", "Romanos 12:2", "Salmos 16:11", "Juan 8:12", "Salmos 121:1-2",
+  "Salmos 27:1", "Efesios 2:8", "Isaías 41:10", "Mateo 11:28", "1 Pedro 5:7",
+  "Isaías 43:2", "Jeremías 31:3",
+];
+
+const CATS = {
+  feliz: { name: "Para cuando estás feliz", list: [
+    "Filipenses 4:4", "Salmos 118:24", "Nehemías 8:10", "Salmos 100:1-2", "Salmos 126:3",
+    "Salmos 16:11", "Salmos 32:11", "Romanos 15:13", "Proverbios 17:22", "Salmos 5:11",
+    "Salmos 9:2", "Salmos 28:7", "Salmos 30:11", "Salmos 34:8", "Salmos 37:4",
+    "Salmos 47:1", "Salmos 95:1", "Salmos 98:4", "Isaías 61:10", "Habacuc 3:18",
+    "Juan 15:11", "1 Tesalonicenses 5:16", "1 Pedro 1:8", "Santiago 1:2",
+  ]},
+  ansioso: { name: "Para cuando estás ansioso", list: [
+    "Filipenses 4:6-7", "1 Pedro 5:7", "Mateo 6:34", "Isaías 26:3", "Salmos 55:22",
+    "Juan 14:27", "Salmos 94:19", "Mateo 6:26", "Salmos 4:8", "Mateo 11:28",
+    "Salmos 46:10", "Isaías 41:10", "Juan 16:33", "Salmos 56:3", "Proverbios 12:25",
+    "Salmos 23:1", "Salmos 121:1-2", "Lucas 12:25", "2 Tesalonicenses 3:16", "Salmos 34:4",
+    "Romanos 8:28", "Jeremías 29:11", "Proverbios 3:5-6", "Isaías 40:31", "Salmos 62:5",
+  ]},
+  enojado: { name: "Para cuando estás enojado", list: [
+    "Efesios 4:26", "Santiago 1:19-20", "Proverbios 15:1", "Proverbios 16:32", "Efesios 4:31-32",
+    "Colosenses 3:13", "Romanos 12:21", "Salmos 37:8", "Proverbios 19:11", "Proverbios 14:29",
+    "Proverbios 29:11", "Proverbios 15:18", "Eclesiastés 7:9", "Mateo 5:9", "Mateo 5:44",
+    "Romanos 12:18", "Romanos 12:19", "Gálatas 5:22-23", "1 Corintios 13:4-5", "Colosenses 3:8",
+    "Salmos 4:4", "Mateo 6:14",
+  ]},
+  agradecido: { name: "Para cuando estás agradecido", list: [
+    "1 Tesalonicenses 5:18", "Salmos 136:1", "Salmos 103:2", "Santiago 1:17", "Lamentaciones 3:22-23",
+    "Colosenses 3:17", "Salmos 100:4", "Salmos 9:1", "2 Corintios 9:15", "Salmos 107:1",
+    "Salmos 118:1", "Salmos 95:2", "Salmos 92:1", "Colosenses 3:15", "Colosenses 2:7",
+    "Efesios 5:20", "1 Crónicas 16:34", "Salmos 28:7", "Salmos 103:1", "Hebreos 12:28",
+    "1 Corintios 15:57", "Salmos 34:1",
+  ]},
+  solo: { name: "Para cuando te sentís solo", list: [
+    "Hebreos 13:5", "Mateo 28:20", "Salmos 27:10", "Deuteronomio 31:6", "Sofonías 3:17",
+    "Salmos 139:9-10", "Jeremías 31:3", "Salmos 23:4", "Isaías 41:10", "Juan 14:18",
+    "Salmos 68:6", "Romanos 8:38-39", "Salmos 34:18", "Deuteronomio 31:8", "Isaías 43:2",
+    "Salmos 145:18", "Mateo 11:28", "Proverbios 18:24", "Salmos 46:1", "1 Pedro 5:7",
+    "Apocalipsis 3:20", "Josué 1:9", "Juan 15:15",
+  ]},
+  triste: { name: "Para cuando estás triste", list: [
+    "Salmos 34:18", "Salmos 30:5", "Salmos 147:3", "Mateo 5:4", "Salmos 42:11",
+    "Apocalipsis 21:4", "Juan 16:22", "2 Corintios 1:3-4", "Salmos 126:5", "Salmos 34:17",
+    "Salmos 43:5", "Mateo 11:28", "Juan 14:1", "Romanos 8:18", "Romanos 15:13",
+    "Isaías 41:10", "Isaías 61:3", "Salmos 23:4", "Salmos 31:24", "Lamentaciones 3:22-23",
+    "2 Corintios 4:17", "Salmos 40:1-2", "Jeremías 29:11", "Salmos 73:26",
+  ]},
+};
+
+// =====================================================================
+// BIBLIA EN LÍNEA (si está disponible)
+// =====================================================================
+let apiOK = null;   // null = sin probar, true/false después de probar
+const chapterCache = {};
+function parseRef(ref) {
+  const m = ref.match(/^(.+) (\d+):(\d+)(?:-(\d+))?$/);
+  if (!m || !BOOKS[m[1]]) return null;
+  return { book: BOOKS[m[1]], chapter: +m[2], from: +m[3], to: +(m[4] || m[3]) };
+}
+function clean(t) {
+  return t.replace(/<p[^>]*>.*?<\/p>/gi, " ").replace(/<sup[^>]*>.*?<\/sup>/gi, "")
+    .replace(/<S>\d+<\/S>/g, "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ")
+    .replace(/^[\s'"«»“”]+|[\s'"«»“”]+$/g, "").trim();
+}
+function withTimeout(p, ms) { return Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), ms))]); }
+async function fetchVerse(ref, apiCode) {
+  const p = parseRef(ref);
+  if (!p) throw new Error("cita");
+  const key = apiCode + "/" + p.book + "/" + p.chapter;
+  if (!chapterCache[key]) {
+    chapterCache[key] = withTimeout(fetch("https://bolls.life/get-text/" + key + "/"), 6000)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .catch(e => { delete chapterCache[key]; throw e; });
+  }
+  const verses = await chapterCache[key];
+  const text = verses.filter(v => v.verse >= p.from && v.verse <= p.to).map(v => clean(v.text)).join(" ");
+  if (!text) throw new Error("vacío");
+  return text;
+}
+const apiProbe = fetchVerse("Salmos 23:1", "RV1960").then(() => { apiOK = true; }, () => { apiOK = false; });
+
+// =====================================================================
+// PANTALLA
+// =====================================================================
+const $ = id => document.getElementById(id);
+const now = new Date();
+const dayNumber = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+const dailyRef = DAILY[dayNumber % DAILY.length];
+const fecha = now.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+$("today").textContent = fecha.charAt(0).toUpperCase() + fecha.slice(1);
+
+let current = null, lastRef = null, shownRef = dailyRef, shownText = "", version = "RVR1960", reqId = 0;
+
+function gatewayUrl(ref, ver) { return "https://www.biblegateway.com/passage/?search=" + encodeURIComponent(ref) + "&version=" + ver; }
+
+function setText(text, ref, ver) {
+  const v = $("verse");
+  v.classList.add("fade");
+  setTimeout(() => {
+    v.textContent = "«" + text + "»";
+    $("ref").innerHTML = ref + ' <span class="v">· ' + ver + "</span>";
+    v.classList.remove("fade");
+  }, reduceMotion ? 0 : 300);
+  shownText = text;
+  $("verLabel").textContent = ver;
+}
+
+function pickLocal() {
+  const pool = (current ? CATS[current].list : DAILY).filter(r => LOCAL[r]);
+  return pool[Math.floor(Math.random() * pool.length)] || dailyRef;
+}
+
+async function paint(changeScene) {
+  const my = ++reqId;
+  $("note").textContent = "";
+  if (apiOK === null) await apiProbe;
+  if (my !== reqId) return;
+  // sin Biblia en línea: solo citas con texto guardado
+  if (!apiOK && !LOCAL[shownRef]) { shownRef = pickLocal(); lastRef = shownRef; }
+  if (!apiOK) version = "RVR1960";
+  if (changeScene) setScene(shownRef);
+  buildMenu();
+  if (version === "RVR1960" && LOCAL[shownRef]) { setText(LOCAL[shownRef], shownRef, version); return; }
+  const vinfo = VERSIONS.find(v => v.code === version);
+  try {
+    const text = await fetchVerse(shownRef, vinfo.api);
+    if (my !== reqId) return;
+    setText(text, shownRef, version);
+  } catch (e) {
+    if (my !== reqId) return;
+    if (!LOCAL[shownRef]) { shownRef = pickLocal(); lastRef = shownRef; setScene(shownRef); }
+    version = "RVR1960";
+    setText(LOCAL[shownRef], shownRef, version);
+    buildMenu();
+    $("note").textContent = "No se pudo cargar esa versión; te mostramos la RVR1960.";
+  }
+}
+
+function buildMenu() {
+  const menu = $("verMenu");
+  menu.innerHTML = "";
+  VERSIONS.forEach(v => {
+    const inline = v.code === "RVR1960" || (apiOK && v.api);
+    let el;
+    if (inline) {
+      el = document.createElement("button");
+      el.type = "button";
+      el.addEventListener("click", () => { closeMenu(); if (version !== v.code) { version = v.code; paint(false); } });
+    } else {
+      el = document.createElement("a");
+      el.href = gatewayUrl(shownRef, v.code);
+      el.target = "_blank"; el.rel = "noopener";
+      el.addEventListener("click", closeMenu);
+    }
+    el.className = "ver-item";
+    el.setAttribute("aria-current", String(v.code === version));
+    el.innerHTML = "<b>" + v.code + (inline ? "" : " ↗") + "</b><span>" + v.name + "</span>";
+    menu.appendChild(el);
+  });
+}
+function closeMenu() { $("verMenu").hidden = true; $("verToggle").setAttribute("aria-expanded", "false"); }
+$("verToggle").addEventListener("click", e => {
+  e.stopPropagation();
+  const open = $("verMenu").hidden;
+  $("verMenu").hidden = !open;
+  $("verToggle").setAttribute("aria-expanded", String(open));
+});
+document.addEventListener("click", e => { if (!e.target.closest(".ver-wrap")) closeMenu(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+
+function showDaily() {
+  current = null;
+  document.querySelectorAll(".cat").forEach(b => b.setAttribute("aria-pressed", "false"));
+  $("another").hidden = true; $("back").hidden = true;
+  $("tag").textContent = "Versículo del día";
+  shownRef = dailyRef;
+  paint(true);
+}
+function showCategory(key) {
+  const list = (apiOK === false) ? CATS[key].list.filter(r => LOCAL[r]) : CATS[key].list;
+  let ref;
+  do { ref = list[Math.floor(Math.random() * list.length)]; } while (list.length > 1 && ref === lastRef);
+  current = key; lastRef = ref; shownRef = ref;
+  document.querySelectorAll(".cat").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.cat === key)));
+  $("another").hidden = false; $("back").hidden = false;
+  $("tag").textContent = CATS[key].name;
+  paint(true);
+  if (window.innerWidth <= 820) $("card").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+}
+document.querySelectorAll(".cat").forEach(b => b.addEventListener("click", () => showCategory(b.dataset.cat)));
+$("another").addEventListener("click", () => current && showCategory(current));
+$("back").addEventListener("click", showDaily);
+
+$("share").addEventListener("click", async () => {
+  const text = "«" + shownText + "» — " + shownRef + " (" + version + ")";
+  try {
+    await navigator.clipboard.writeText(text);
+    $("share").textContent = "¡Copiado!";
+  } catch (e) {
+    const range = document.createRange(); range.selectNodeContents($("verse"));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    $("share").textContent = "Texto seleccionado";
+  }
+  setTimeout(() => $("share").textContent = "Copiar versículo", 1800);
+});
+
+setScene(dailyRef);
+showDaily();
+</script>
